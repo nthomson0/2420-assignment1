@@ -20,7 +20,8 @@ Just before we hop into our Arch Droplet, we are going to create a Personal Acce
 
 1. Open https://cloud.digitalocean.com/account/api/tokens on your local machine
 2. Click **Generate New Token**
-3. Give your token a meaningful name, and allow full access.  
+3. Give your token a meaningful name, and allow full access.
+
 **Note:** You can choose what commands your token has access to, but for this tutorial we will just set a quick expiry and allow all access.
 
 ## Creating SSH Keys
@@ -45,12 +46,72 @@ SSH keys are generally made up of two parts, the public key, and the private key
 
 If successful, you should now see a key fingerprint and some random art.
 
-3. Optionally, type `find .ssh` to confirm our key exists.
+Optionally you can type `find .ssh` to confirm your key exists.
 
 This will print out all the files within our `.ssh/` directory, given it exists.
 
-## Setting up Cloud-init on your Droplet
+## Setting up Cloud-init
+Cloud-init is essentially used for launching remote cloud servers. In this case we will be creating a cloud-init configuration file for any new Droplets we creating. This is useful because we can do things like initialize users, set their privileges, and pre-download packages.
 
-## Installing doctl on your Droplet
+1. Type `nvim cloud-init-arch-config.yml` to create a .yml cloud-init config file using neovim.
+
+- A .yml or YAML file is essentially a more readable data file, kind of like json.
+
+2. Copy and paste the code block below into neovim, filling in the `<name>` sections with a nickname. Once you're done you can type `:exit` to exit nvim.
+```
+#cloud-config
+users:
+  - name: <name>
+    primary_group: <name>
+    groups: wheel
+    sudo: ['ALL=(ALL) NOPASSWD:ALL']
+    shell: /bin/bash
+    ssh-authorized-keys:
+      - <ssh public key>
+
+packages:
+  - ripgrep
+  - rsync
+  - neovim
+  - fd
+  - less
+  - man-db
+  - bash-completion
+  - tmux
+
+disable_root: true
+```
+
+Now we have to go back and copy our SSH key so that we can add it to our config file.
+
+3. Type `cat .ssh/do-key.pub`, this will output the public key we made earlier given you also named it `do-key`.
+
+4. Copy the public key to the clipboard.
+
+5. Type `nvim cloud-init-arch-config.yml` to edit our file with neovim.
+
+6. Click **i** to enter insert mode, and then paste your public key where it says `<ssh public key>`, deleting the placeholder text before doing so.
+
+7. Click **esc** to exit insert mode.
+
+At this point your file should look something like this:
+
+`IMAGE HERE`
+
+8. Type `:exit` once again to leave nvim.
+
+You've now successfully created a cloud-init config file, but what did we even put in that file?
+
+- `users` specifies the follow entries are us adding a user.
+    - `name` is the name of the user.
+    - `primary_group` is the group associated to this user. It's good practice for this to just be the same as the user's name.
+    - `groups` are additional groups that we are adding the new user to. In this case we are adding them to the `wheel` group, which allows them to use `sudo` which elevates commands to admin privilege.
+    - `sudo` specifies what the sudo command allows the user to do. In this case they are allowed to do anything, without any password to block them.
+    - `shell` specifies the location of the shell.
+    - `ssh-authorized-keys` adds the corresponding key to the user's authorized keys file.
+- `packages` preinstalls all the corresponding packages to the user's instance.
+- `disable_root` disables access to the root user on the instance. This is good practice since the user can already use commands at a root user's privilege level using sudo. We can also track users usage of the sudo command, whereas if we allow access to the root user we could not.
+
+## Installing doctl
 
 ## 
