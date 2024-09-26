@@ -19,7 +19,7 @@ SSH, also known as secure shell, is simply a way for us to remotely access anoth
 SSH keys are generally made up of two parts, the public key, and the private key. The public key can be thought of as a lock that we are using to secure the connection. The private key can be thought of as the key that unlocks the lock. Everybody can see the public key, but private keys are hidden.
 
 Once connected to your Arch Linux Droplet, you can run the following command:
-    ssh-keygen -t ed25519 -f ~/.ssh/do-key -C "<name>"
+`ssh-keygen -t ed25519 -f ~/.ssh/do-key -C "<name>"`
 
 ## Creating a Personal Access Token for doctl
 
