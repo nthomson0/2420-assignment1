@@ -15,15 +15,6 @@ To complete this tutorial you will just need a few things:
 
 **Note:** Everything from here forward will be using your Arch Linux Droplet unless otherwise specified.
 
-## Creating a Personal Access Token
-Just before we hop into our Arch Droplet, we are going to create a Personal Access Token so that we can use our Digital Ocean account remotely later on.
-
-1. Open https://cloud.digitalocean.com/account/api/tokens on your local machine
-2. Click **Generate New Token**
-3. Give your token a meaningful name, and allow full access.
-
-**Note:** You can choose what commands your token has access to, but for this tutorial we will just set a quick expiry and allow all access.
-
 ## Creating SSH Keys
 SSH, also known as secure shell, is simply a way for us to remotely access another computer.
 
@@ -105,13 +96,78 @@ You've now successfully created a cloud-init config file, but what did we even p
 - `users` specifies the follow entries are us adding a user.
     - `name` is the name of the user.
     - `primary_group` is the group associated to this user. It's good practice for this to just be the same as the user's name.
-    - `groups` are additional groups that we are adding the new user to. In this case we are adding them to the `wheel` group, which allows them to use `sudo` which elevates commands to admin privilege.
+    - `groups` are additional groups that we are adding the new user to. In this case we are adding them to the `wheel` group, which allows them to use `sudo` which elevates commands to a root user's privilege.
     - `sudo` specifies what the sudo command allows the user to do. In this case they are allowed to do anything, without any password to block them.
     - `shell` specifies the location of the shell.
     - `ssh-authorized-keys` adds the corresponding key to the user's authorized keys file.
 - `packages` preinstalls all the corresponding packages to the user's instance.
 - `disable_root` disables access to the root user on the instance. This is good practice since the user can already use commands at a root user's privilege level using sudo. We can also track users usage of the sudo command, whereas if we allow access to the root user we could not.
 
-## Installing doctl
+## Initializing a Droplet using doctl
+You will now be installing doctl and using it to initialize an Arch Linux Droplet. doctl is simply the command line interface that Digital Ocean uses to manage droplets. In this case we will be using it to create a Droplet.
 
-## 
+### Installing doctl
+
+1. Type `sudo pacman -S doctl` to install the doctl package.
+
+- `sudo` elevates our privileges to the root user level, like previously mentioned.
+- `pacman` is the Arch Linux package manager.
+- `-S` stands for synchronize packages. This option makes it so that while installing the specified packages, in this case `doctl`, it will also install any dependencies. Dependencies are packages that `doctl` requires to function.
+- `doctl` simply specifies which package we want to install.
+
+### Creating a Personal Access Token
+We will take a quick aside back to our local machine to create a Personal Access Token. This Token will allow `doctl` to access our Digital Ocean account remotely.
+
+2. Open https://cloud.digitalocean.com/account/api/tokens on your local machine.
+3. Click **Generate New Token**.
+4. Give your token a meaningful name, and specify full access.
+
+**Note:** You can choose what commands your token has access to, but for this tutorial we will just set a 30 day expiry and allow full access.
+
+5. Copy the token provided once the page redirects.
+
+### Using doctl to Access Digital Ocean
+For the remainder of the tutorial we will be back in our Arch Linux Droplet.
+
+6. Run the following command, where `<name>` is preferably the nickname you used for your user earlier.
+`doctl auth init --context <name>`
+
+- `auth` specifies an authentication command for your Digital Ocean.
+- `init` specifies that we will be initializing a new account.
+- `--context` followed by `<name>` is specifying the name we will associate with the new account.
+
+7. Paste your token when prompted.
+
+**Note:** If you have done this correctly you should be met with a check mark after validating your token.
+
+`INSERT IMAGE`
+
+8. Run the following command, where `<name>` is the nickname you provided in step 6, to switch to your newly initialized token.
+`doctl auth switch --context <name>`
+
+- `switch` specifies that we will be switching to the account.
+- `--context <name>` once again specifies which account we will be switching to.
+
+9. Run `cat ~/.ssh/do-key.pub` and copy your public key again.
+
+10. Run the following command, where `<name>` is the nickname you've been using, and where `<public key>` is your public key within quotations.
+
+`doctl compute ssh-key create <name> --public-key "<public key>"`
+
+- `compute ssh-key create` specifies that we will be adding a new key to our Digital Ocean account, where `<name>` is the nickname of the key.
+- `--public-key` followed by our public key simply tells Digital Ocean that that's the key we want to associate with the nickname.
+
+If you did this correctly you should see the key printed back to you with an ID attached.
+
+`INSERT IMAGE`
+
+**Note:** If you ever forget the key ID, you can simply run `doctl compute ssh-key list` to see all your keys.
+
+11. Run the following to get the ID related to your Arch Linux image.
+`doctl compute image list-user`
+
+Now that we have the image ID, the public key ID and a cloud-init config file, we can finally run a command to initialize a new Droplet.
+
+12. Run the following, replacing the `<DROPLET NAME>` with a nickname, `<IMAGE ID>` with the Arch Linux and `<PATH>` sections with your own.
+
+`doctl compute droplet create <DROPLET NAME> --region sfo3 --image <IMAGE ID> --size s-1vcpu-1gb-intel --ssh-keys <PUBLIC KEY ID> --user-data-file <cloud-init-arch-config.yml PATH>`
