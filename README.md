@@ -210,3 +210,10 @@ Sure enough, if we check our Digital Ocean account, our Droplet is up and runnin
 ![digital ocean success](./images/success.png)
 
 # References
+
+[^1]https://www.markdownguide.org/
+[^2]https://docs.cloud-init.io/en/latest/index.html
+[^3]https://www.digitalocean.com/community/tutorials/how-to-use-cloud-config-for-your-initial-server-setup
+[^4]https://docs.digitalocean.com/reference/doctl/
+[^5]https://www.ssh.com/academy
+[^6]https://docs.digitalocean.com/reference/api/create-personal-access-token/
